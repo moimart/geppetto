@@ -26,8 +26,10 @@ HASS_TOKEN="" # Long-lived Access Token
 HASS_HOST="" # Your Home Assistant server (with :port)
 OPENAI_API_KEY=""
 PORCUPINE_ACCESS_KEY=""
-PORCUPINE_KEYWORD="" # keyword of your model
+PORCUPINE_KEYWORD="" # keyword of your model – The name of the assistant
 PORCUPINE_KEYWORD_PATH="" # full path to wake word model file – if you leave both KEYWORD AND KEYWORD_PATH will use default porcupine models and wake words
+GOOGLE_APPLICATION_CREDENTIALS="" # A service account file
+USER_NAME="Pinocchio" # How you want the assistant to call you
 ```
 
 Then just:

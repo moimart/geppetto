@@ -2,6 +2,7 @@ from porcupine import Porcupine
 from recorder import Recorder
 from asr import ASR
 from gpt import GPTHass
+from tts import TTS
 import os
 from dotenv import load_dotenv
 
@@ -26,9 +27,12 @@ class AssistantEngine:
         self.asr_engine.result_callback = self.asr_result
         
         self.gpt = GPTHass()
-        self.gpt_result_callback = self.gpt_result
+        self.gpt.command_result_callback = self.command_result
+        self.gpt.tts_result_callback = self.tts_result
         
         self.wake_word_engine.callback = self.wake_word_detected
+        
+        self.tts = TTS()
         
         while True:
             self.wake_word_engine.run()
@@ -40,14 +44,17 @@ class AssistantEngine:
         self.recorder.record()
             
     def start_asr(self, file_path):
-        print("start asr")
-        
+        print("Starting ASR...")
         self.asr_engine.transcribe(file_path)
             
     def asr_result(self, result):
         self.gpt.answer(result)
          
-    def gpt_result(self, result):
-        print("gpt result {}".format(result))
+    def command_result(self, result):
+        pass
+        
+    def tts_result(self, result):
+        print(result)
+        self.tts.speak(result)
 
 assistant = AssistantEngine()
