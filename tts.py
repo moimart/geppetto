@@ -4,12 +4,10 @@ import os
 # Import the required libraries
 from google.cloud import texttospeech
 import pyaudio
-from dotenv import load_dotenv
 
 class TTS:
-    def __init__(self):
-        load_dotenv()
-        self.path_to_credentials = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+    def __init__(self, config):
+        self.path_to_credentials = config["credentials"]
         self.client = texttospeech.TextToSpeechClient()
         
         self.tts_done_callback = None

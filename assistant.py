@@ -26,13 +26,22 @@ class AssistantEngine:
         self.asr_engine = ASR()
         self.asr_engine.result_callback = self.asr_result
         
-        self.gpt = GPTHass()
+        
+        self.gpt = GPTHass(
+            config={ \
+                "hass_token": os.environ.get("HASS_TOKEN"), \
+                "hass_host": os.environ.get("HASS_HOST"), \
+                "user_name": os.environ.get("USER_NAME"), \
+                "openai_api_key": os.environ.get("OPENAI_API_KEY") \
+            }
+        )
+        
         self.gpt.command_result_callback = self.command_result
         self.gpt.tts_result_callback = self.tts_result
         
         self.wake_word_engine.callback = self.wake_word_detected
         
-        self.tts = TTS()
+        self.tts = TTS(config={"credentials": os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")})
         
         while True:
             self.wake_word_engine.run()
