@@ -12,7 +12,7 @@ class ASR:
         result = self.model.transcribe(file_path)
 
         if self.result_callback is not None:
-            self.result_callback(result["text"])
+            self.result_callback(result["text"].strip())
 
 
 

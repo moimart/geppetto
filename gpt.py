@@ -24,28 +24,38 @@ class GPTHass:
         self.get_hass_entities()
         
         self.interaction_counter = self.last_prompt_number()
-        self.training = True
+        self.training = False
+        self.file = None
+        
+    def indent_with_tabs(input_string):
+        indented_string = "    ".join(input_string.splitlines(True))
+        return indented_string.strip().replace("\"", "\\\"")
         
     def last_prompt_number(self):
-        files = os.listdir('.')
-        prompt_files = [f for f in files if f.startswith('prompt-') and f.endswith('.txt')]
+        files = os.listdir('./training/')
+        prompt_files = [f for f in files if f.startswith('prompt-') and f.endswith('.yml')]
         if prompt_files:
             prompt_numbers = [int(f.split('-')[1].split('.')[0]) for f in prompt_files]
-            return max(prompt_numbers)
+            return max(prompt_numbers) + 1
         else:
             return 0
         
     def write_prompt(self, content):
         if self.training:
-            with open(f"training/prompt-{self.interaction_counter}.txt", "w") as f:
-                f.write(content)
-                f.close()
+            self.file = open(f"training/prompt-{self.interaction_counter}.yml", "w")
+            self.file.write(\
+                f"prompt: >\n" \
+                f"    \"{GPTHass.indent_with_tabs(content)}\"" \
+                "\n"
+            )
             
     def write_answer(self, content):
         if self.training:
-            with open(f"training/answer-{self.interaction_counter}.txt", "w") as f:
-                f.write(content)
-                f.close()
+            self.file.write(\
+                "\nanswer: >\n" \
+                f"    \"{GPTHass.indent_with_tabs(content)}\""
+            )
+            self.file.close()
         
     def get_hass_entities(self):
         url = 'http://{}/api/states'.format(self.hass_host)
@@ -70,10 +80,9 @@ class GPTHass:
         mood = "positively and affirmatively" if positive else "negatively"
         
         prompt = \
-        """
-        My name is {}. You are HAL 9000 and you are connected to the smart home system. Give me what HAL 9000 would reply {} to this command: "{}" 
-        HAL 9000: 
-        """.format(self.user_name, mood, asr_text)
+        f"My name is {self.user_name}. You are HAL 9000 and you are connected to the smart home system. " \
+        f"Give me what HAL 9000 would reply {mood} to this command: \"{asr_text}\" " \
+        "HAL 9000: "
         
         response = openai.ChatCompletion.create(
             model="gpt-4",
@@ -89,12 +98,13 @@ class GPTHass:
         
     def answer(self, asr_text):
         prompt = \
-        """
-        Entities:
-        {}
-
-         For the prompt "{}", as long as it contains a valid entity, I need a python list where each item is a dictionary with the service and entity_id for each item to send trough the Home Assistant API, potentially with data if needed. If not, just provide an answer to the prompt.
-        """.format(self.entities, asr_text)
+        "Entities:\n" \
+        f"{self.entities}\n" \
+        "\n" \
+        f"For the prompt \"{asr_text}\", as long as it contains a valid entity, " \
+        "I need a python list where each item is a dictionary with the service " \
+        "and entity_id for each item to send trough the Home Assistant API, potentially " \
+        "with data if needed. If not, just answer the word Error."
         
         self.write_prompt(prompt)
         print(prompt)
@@ -112,14 +122,14 @@ class GPTHass:
                 
         content = response["choices"][0].message["content"]
         content = content.replace("```", "")
-        content = content.replace("python", "")
+        content = content.replace("python", "").replace("\n", "").replace("\t", "").replace(" ", "")
         
         self.write_answer(content)
         self.interaction_counter += 1
         
         try:
-            commands = ast.literal_eval(content)  
-        
+            commands = json.loads(content)
+                
             if  self.command_result_callback != None:
                 self.command_result_callback(commands)
                 
@@ -135,6 +145,10 @@ class GPTHass:
                     '/' + command['service'].split('.')[1]
 
             json = { "entity_id": command['entity_id']}
+            if 'data' in command:
+                json.update(command['data'])
+                
+            print(json)
             async with session.post(url, json=json) as response:
                 print(await response.text())
                 pass
