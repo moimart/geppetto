@@ -23,6 +23,30 @@ class GPTHass:
 
         self.get_hass_entities()
         
+        self.interaction_counter = self.last_prompt_number()
+        self.training = True
+        
+    def last_prompt_number(self):
+        files = os.listdir('.')
+        prompt_files = [f for f in files if f.startswith('prompt-') and f.endswith('.txt')]
+        if prompt_files:
+            prompt_numbers = [int(f.split('-')[1].split('.')[0]) for f in prompt_files]
+            return max(prompt_numbers)
+        else:
+            return 0
+        
+    def write_prompt(self, content):
+        if self.training:
+            with open(f"training/prompt-{self.interaction_counter}.txt", "w") as f:
+                f.write(content)
+                f.close()
+            
+    def write_answer(self, content):
+        if self.training:
+            with open(f"training/answer-{self.interaction_counter}.txt", "w") as f:
+                f.write(content)
+                f.close()
+        
     def get_hass_entities(self):
         url = 'http://{}/api/states'.format(self.hass_host)
         
@@ -72,24 +96,31 @@ class GPTHass:
          For the prompt "{}", as long as it contains a valid entity, I need a python list where each item is a dictionary with the service and entity_id for each item to send trough the Home Assistant API, potentially with data if needed. If not, just provide an answer to the prompt.
         """.format(self.entities, asr_text)
         
+        self.write_prompt(prompt)
         print(prompt)
 
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
-        )
-
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
+            )
+        except:
+            if self.tts_result_callback != None:
+                self.tts_result_callback("GPT-4 is not available at the moment")
+                
         content = response["choices"][0].message["content"]
         content = content.replace("```", "")
         content = content.replace("python", "")
-        print(content)
+        
+        self.write_answer(content)
+        self.interaction_counter += 1
         
         try:
             commands = ast.literal_eval(content)  
         
-            if  self.command_result_callback is not None:
+            if  self.command_result_callback != None:
                 self.command_result_callback(commands)
                 
             asyncio.run(self.send_all_commands(commands, asr_text))

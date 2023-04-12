@@ -1,0 +1,1 @@
+This folder is to generate prompts and answer for fine-tuning GPT model
