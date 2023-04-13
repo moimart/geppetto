@@ -69,9 +69,9 @@ class GPTHass:
                 entity_id = state["entity_id"]
                 entity_name = state["attributes"].get("friendly_name")
                 if entity_name is not None:
-                    if "switch." in entity_id or "button." in entity_id or \
+                    if "switch." in entity_id or "lock." in entity_id or \
                         "light." in entity_id or "media_player." in entity_id or \
-                        "fan." in entity_id or "cover." in entity_id:
+                        "climate." in entity_id or "fan." in entity_id or "cover." in entity_id:
                         self.entities += entity_id + " = " + entity_name + "\n"
             self.entities += "\n"
        
