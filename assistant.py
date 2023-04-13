@@ -3,6 +3,7 @@ from recorder import Recorder
 from asr import ASR
 from gpt import GPTHass
 from tts import TTS
+from soundboard import SoundBoard
 import os
 from dotenv import load_dotenv
 
@@ -26,6 +27,7 @@ class AssistantEngine:
         self.asr_engine = ASR()
         self.asr_engine.result_callback = self.asr_result
         
+        self.soundboard = SoundBoard()
         
         self.gpt = GPTHass(
             config={ \
@@ -50,6 +52,7 @@ class AssistantEngine:
         print("wake word detected {}".format(keyword_index))
         self.wake_word_engine.stop()
         self.asr_active = True
+        self.soundboard.play("chime")
         self.recorder.record()
             
     def start_asr(self, file_path):

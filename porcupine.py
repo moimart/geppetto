@@ -23,12 +23,6 @@ class Porcupine(Thread):
         
         if keywords is None:
             keywords = pvporcupine.KEYWORDS
-        
-        if library_path is None:
-            library_path=pvporcupine.LIBRARY_PATH
-        
-        if model_path is None:
-            model_path=pvporcupine.MODEL_PATH
             
         if keyword_paths is None:
             keyword_paths = [pvporcupine.KEYWORD_PATHS[x] for x in keywords]
@@ -67,8 +61,6 @@ class Porcupine(Thread):
         try:
             porcupine = pvporcupine.create(
                 access_key=self._access_key,
-                library_path=self._library_path,
-                model_path=self._model_path,
                 keyword_paths=self._keyword_paths,
                 sensitivities=self._sensitivities)
 

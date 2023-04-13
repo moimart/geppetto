@@ -1,10 +1,6 @@
 import io
-import os
-
-# Import the required libraries
 from google.cloud import texttospeech
 import pyaudio
-
 class TTS:
     def __init__(self, config):
         self.path_to_credentials = config["credentials"]

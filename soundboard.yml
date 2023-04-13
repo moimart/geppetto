@@ -1,0 +1,4 @@
+sounds:
+    - id: chime
+      file: sounds/chime.wav
+
