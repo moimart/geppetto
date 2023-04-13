@@ -24,7 +24,7 @@ class GPTHass:
         self.get_hass_entities()
         
         self.interaction_counter = self.last_prompt_number()
-        self.training = False
+        self.training = os.environ.get("GEPPETTO_TRAINING", False)
         self.file = None
         
     def indent_with_tabs(input_string):
@@ -104,7 +104,8 @@ class GPTHass:
         f"For the prompt \"{asr_text}\", as long as it contains a valid entity, " \
         "I need a python list where each item is a dictionary with the service " \
         "and entity_id for each item to send trough the Home Assistant API, potentially " \
-        "with data if needed. If not, just answer the word Error."
+        "with data if needed. If it is command and it does not match to any of the entities, " \
+        "just answer with the word: Error. If the prompt is not a command, just answer with the word: \"not_command\".\n"
         
         self.write_prompt(prompt)
         print(prompt)
@@ -126,6 +127,13 @@ class GPTHass:
         
         self.write_answer(content)
         self.interaction_counter += 1
+        
+        if content == "Error":
+            self.assistant_answer(asr_text, False)
+            return
+        elif content == "not_command":
+            self.assistant_answer(asr_text)
+            return
         
         try:
             commands = json.loads(content)
