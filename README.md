@@ -8,11 +8,10 @@ completion model and Google Cloud TTS API for answers. Most of the code, in the 
 ### Features:
 * Control lights, switches, locks, covers, climate and mediaplayers 
 ** Simultaneous commands, granular
-* Generic assistant questions
+* Generic assistant questions – including time
 * Text-to-speech responses with Google Cloud TTS
 
 ### Not supported:
-* Time
 * Weather
 * Timers
 

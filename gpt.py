@@ -6,6 +6,7 @@ import ast
 import os
 import requests
 import json
+import datetime
 
 class GPTHass:
     def __init__(self, config):
@@ -26,6 +27,21 @@ class GPTHass:
         self.interaction_counter = self.last_prompt_number()
         self.training = os.environ.get("GEPPETTO_TRAINING", False)
         self.file = None
+        
+        self.location = "Berlin, Germany"
+        self.update_location()
+        
+    def update_location(self):
+        response = requests.get("https://ipapi.co/json")
+        data = response.json()
+        
+        if 'error' in data:
+            return
+        
+        city = data['city']
+        country = data['country_name']
+
+        self.location = f"{city}, {country}."
         
     def indent_with_tabs(input_string):
         indented_string = "    ".join(input_string.splitlines(True))
@@ -79,8 +95,10 @@ class GPTHass:
         
         mood = "positively and affirmatively" if positive else "negatively"
         
+        date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         prompt = \
-        f"My name is {self.user_name}. You are HAL 9000 and you are connected to the smart home system. " \
+        f"My name is {self.user_name}. Today is {date} and we are in {self.location}. " \
+        "You are HAL 9000 and you are connected to the smart home system. " \
         f"Give me what HAL 9000 would reply {mood} to this command: \"{asr_text}\" " \
         "HAL 9000: "
         
