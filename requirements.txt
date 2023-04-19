@@ -16,3 +16,6 @@ grpcio==1.53.0
 grpcio-status==1.53.0
 PyYAML==6.0
 PyAudio==0.2.13
+websockets==11.0.2
+websocket-client==1.5.1
+rel==0.4.8

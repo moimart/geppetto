@@ -11,6 +11,8 @@ class AssistantEngine:
     def __init__(self):
         load_dotenv()
         
+        self.shared_data = None
+        
         self.asr_active = False
         
         self.wake_word_engine = Porcupine(
@@ -45,28 +47,34 @@ class AssistantEngine:
         
         self.tts = TTS(config={"credentials": os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")})
         
+    def run(self):
         while True:
+            self.shared_data = {"state": "idle"}
             self.wake_word_engine.run()
         
     def wake_word_detected(self, keyword_index):
+        self.shared_data = {"state": "detected"}
         print("wake word detected {}".format(keyword_index))
         self.wake_word_engine.stop()
         self.asr_active = True
         self.soundboard.play("chime")
+        self.shared_data = {"state": "detecting"}
         self.recorder.record()
             
     def start_asr(self, file_path):
+        self.shared_data = {"state": "transcribing"}
         print("Starting ASR...")
         self.asr_engine.transcribe(file_path)
             
     def asr_result(self, result):
+        self.shared_data = {"state": "processing"}
         self.gpt.answer(result)
          
     def command_result(self, result):
+        self.shared_data =  {"state": "result_received"}
         pass
         
     def tts_result(self, result):
         print(result)
+        self.shared_data = {"state": "speaking"}
         self.tts.speak(result)
-
-assistant = AssistantEngine()
